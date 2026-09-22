@@ -1,0 +1,29 @@
+# Serverless variant of the merge job. Used to runtime-test the notebook on
+# workspaces where the caller lacks classic cluster-create permission (e.g. the
+# e2-demo-west test workspace). The delivered job (merge_metadata_job.yml) uses a
+# classic DBR 17.3 LTS job cluster as required; this one runs the SAME notebook
+# on serverless compute so the merge logic can be validated end-to-end.
+resources:
+  jobs:
+    merge_metadata_job_serverless:
+      name: merge_metadata_job_serverless
+      tags:
+        project: metadata_table_migration
+        variant: serverless-test
+
+      tasks:
+        - task_key: merge_metadata
+          # No job_cluster / new_cluster -> runs on serverless compute.
+          notebook_task:
+            notebook_path: ../notebooks/merge_metadata.py
+            base_parameters:
+              source_table: ${var.source_table}
+              target_table: ${var.target_table}
+              merge_keys: ${var.merge_keys}
+              exclusion_csv_path: ${var.exclusion_csv_path}
+              dry_run: ${var.dry_run}
+              monotonic_guard: ${var.monotonic_guard}
+              dedup_source: ${var.dedup_source}
+
+      queue:
+        enabled: true

@@ -1,0 +1,36 @@
+resources:
+  jobs:
+    merge_metadata_job:
+      name: merge_metadata_job
+      tags:
+        project: metadata_table_migration
+
+      job_clusters:
+        - job_cluster_key: merge_cluster
+          new_cluster:
+            spark_version: 17.3.x-scala2.13   # DBR 17.3 LTS (Spark 4.0.0, Scala 2.13)
+            node_type_id: m5d.large
+            num_workers: 0                     # single-node cluster
+            data_security_mode: SINGLE_USER    # required for Unity Catalog access
+            spark_conf:
+              spark.databricks.cluster.profile: singleNode
+              spark.master: "local[*, 4]"
+            custom_tags:
+              ResourceClass: SingleNode
+
+      tasks:
+        - task_key: merge_metadata
+          job_cluster_key: merge_cluster
+          notebook_task:
+            notebook_path: ../notebooks/merge_metadata.py
+            base_parameters:
+              source_table: ${var.source_table}
+              target_table: ${var.target_table}
+              merge_keys: ${var.merge_keys}
+              exclusion_csv_path: ${var.exclusion_csv_path}
+              dry_run: ${var.dry_run}
+              monotonic_guard: ${var.monotonic_guard}
+              dedup_source: ${var.dedup_source}
+
+      queue:
+        enabled: true

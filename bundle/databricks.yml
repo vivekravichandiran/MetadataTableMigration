@@ -1,0 +1,45 @@
+bundle:
+  name: metadata_table_migration
+
+include:
+  - resources/*.yml
+
+# Variables let the same bundle run against different environments and tables
+# without editing the notebook. Override per-target below or on the CLI with
+# `--var key=value`.
+variables:
+  source_table:
+    description: Fully-qualified source cdf_metadata_table (catalog.schema.table)
+    default: main.metadata_migration.cdf_metadata_src
+  target_table:
+    description: Fully-qualified target cdf_metadata_table (catalog.schema.table)
+    default: main.metadata_migration.cdf_metadata_tgt
+  merge_keys:
+    description: Comma-separated merge key columns
+    default: target_table_name
+  exclusion_csv_path:
+    description: Path to the exclusion list CSV (UC Volume path recommended)
+    default: /Volumes/main/metadata_migration/config/exclusion_list.csv
+  dry_run:
+    description: When true, computes counts but does not execute the MERGE
+    default: "false"
+  monotonic_guard:
+    description: Only update when src.last_updated_ts > tgt.last_updated_ts
+    default: "true"
+  dedup_source:
+    description: Deduplicate source on merge keys (keep latest last_updated_ts)
+    default: "true"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://e2-demo-west.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://e2-demo-west.cloud.databricks.com
+    variables:
+      dry_run: "false"

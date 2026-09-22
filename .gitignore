@@ -1,0 +1,18 @@
+# Databricks Asset Bundle local state / build artifacts
+bundle/.databricks/
+.databricks/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Local scratch
+/tmp/
+*.log
